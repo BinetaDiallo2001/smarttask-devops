@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     agent {
         label 'docker-agent'
@@ -33,44 +32,35 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([
-                    string(
-                        credentialsId: 'docker-password',
-                        variable: 'DOCKER_PASSWORD'
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
-                    sh '''
-                        echo "$DOCKER_PASSWORD" | docker login \
-                        -u "$DOCKER_USER" \
-                        --password-stdin
-                    '''
+                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin'
                 }
             }
         }
 
         stage('Push Images') {
             steps {
-                sh '''
-                    docker push $BACKEND_IMAGE
-                    docker push $FRONTEND_IMAGE
-                '''
+                sh 'docker push $BACKEND_IMAGE'
+                sh 'docker push $FRONTEND_IMAGE'
             }
         }
     }
 
     post {
+        always {
+            echo 'Fin de l’exécution du pipeline.'
+        }
         success {
             echo 'Pipeline CI/CD exécuté avec succès !'
             echo 'Les images Docker ont été construites et poussées vers Docker Hub.'
         }
-
         failure {
             echo 'Le pipeline a échoué.'
         }
-
-        always {
-            echo 'Fin de l’exécution du pipeline.'
-        }
     }
 }
-```
-
