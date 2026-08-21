@@ -3,6 +3,12 @@ pipeline {
         label 'docker-agent'
     }
 
+    environment {
+        DOCKER_USER = 'bineta2026'
+        BACKEND_IMAGE = 'bineta2026/smarttask-backend:latest'
+        FRONTEND_IMAGE = 'bineta2026/smarttask-frontend:latest'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -13,13 +19,13 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                sh 'docker build -t BinetaDiallo2001/smarttask-backend:latest ./backend'
+                sh 'docker build -t $BACKEND_IMAGE ./backend'
             }
         }
 
         stage('Build Frontend') {
             steps {
-                sh 'docker build -t BinetaDiallo2001/smarttask-frontend:latest ./frontend'
+                sh 'docker build -t $FRONTEND_IMAGE ./frontend'
             }
         }
 
@@ -39,21 +45,26 @@ pipeline {
 
         stage('Push Images') {
             steps {
-                sh 'docker push BinetaDiallo2001/smarttask-backend:latest'
-                sh 'docker push BinetaDiallo2001/smarttask-frontend:latest'
+                sh '''
+                    docker push $BACKEND_IMAGE
+                    docker push $FRONTEND_IMAGE
+                '''
             }
         }
     }
 
     post {
         always {
-            echo 'Fin de l’exécution du pipeline.'
+            echo 'Fin de l’exécution du pipeline PROD.'
         }
+
         success {
-            echo 'Pipeline CI/CD terminé avec succès.'
+            echo 'Pipeline CI/CD PROD exécuté avec succès !'
+            echo 'Les images Docker ont été construites et poussées vers Docker Hub.'
         }
+
         failure {
-            echo 'Le pipeline a échoué.'
+            echo 'Le pipeline PROD a échoué.'
         }
     }
 }
